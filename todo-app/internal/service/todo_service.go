@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"sync"
 )
 
@@ -12,6 +11,7 @@ type Service interface {
 	ToggleTodoDone(id uint) *Todo
 	RemoveTodo(id uint)
     GetTodo(id uint) *Todo
+    getServiceData() *service
 }
 
 type Todo struct {
@@ -31,6 +31,9 @@ func NewService() Service {
 	return &service{&sync.Mutex{}, todos, &last_id}
 }
 
+func (s *service) getServiceData() *service{
+    return s
+}
 func (s *service) GetTodos() map[uint]Todo {
 	s.mu.Lock()
 	defer s.mu.Unlock()

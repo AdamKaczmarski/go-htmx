@@ -21,9 +21,9 @@ func TestTodoService(t *testing.T) {
 	})
 	t.Run("AddingTodos", func(t *testing.T) {
 		s := NewService()
-		expected := make(map[uint]todo)
+		expected := make(map[uint]Todo)
 		for i := 1; i < 6; i++ {
-			expected[uint(i)] = todo{false, &note}
+			expected[uint(i)] = Todo{false, &note}
 			_ = s.AddTodo(&note)
 		}
 		if !reflect.DeepEqual(expected, s.todos) {
@@ -36,7 +36,7 @@ func TestTodoService(t *testing.T) {
 		id := s.AddTodo(&str)
 		s.MarkTodoAsDone(id)
 		for _, todo := range s.todos {
-			if !todo.done {
+			if !todo.Done {
 				panic(fmt.Sprintf("Todo should be done, actual %v", todo))
 			}
 		}

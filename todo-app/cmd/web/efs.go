@@ -1,6 +1,8 @@
 package web
 
-import "embed"
+import (
+	"embed"
+)
 
 //go:embed "js"
 var Files embed.FS

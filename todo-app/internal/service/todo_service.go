@@ -2,37 +2,39 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"sync"
 )
 
 type Service interface {
-	GetTodos() map[uint]todo
+	GetTodos() map[uint]Todo
 	AddTodo(note *string) uint
-	MarkTodoAsDone(id uint)
+	ToggleTodoDone(id uint) *Todo
 	RemoveTodo(id uint)
+    GetTodo(id uint) *Todo
 }
 
-type todo struct {
-	done bool
-	note *string
+type Todo struct {
+	Done bool
+	Note *string
 }
 
 type service struct {
 	mu      *sync.Mutex
-	todos   map[uint]todo
+	todos   map[uint]Todo
 	last_id *uint
 }
 
-func NewService() *service {
-	todos := make(map[uint]todo)
+func NewService() Service {
+	todos := make(map[uint]Todo)
 	var last_id uint = 1
 	return &service{&sync.Mutex{}, todos, &last_id}
 }
 
-func (s *service) GetTodos() map[uint]todo {
+func (s *service) GetTodos() map[uint]Todo {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	clonedMap := make(map[uint]todo, len(s.todos))
+	clonedMap := make(map[uint]Todo, len(s.todos))
 	for k, v := range s.todos {
 		clonedMap[k] = v
 	}
@@ -44,20 +46,22 @@ func (s *service) AddTodo(note *string) uint {
 	defer s.mu.Unlock()
 	id := *s.last_id
 	*s.last_id += 1
-	newTodo := todo{
-		done: false,
-		note: note,
+	newTodo := Todo{
+		Done: false,
+		Note: note,
 	}
 	s.todos[id] = newTodo
 	return id
 }
-func (s *service) MarkTodoAsDone(id uint) {
+func (s *service) ToggleTodoDone(id uint) *Todo {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if todo, ok := s.todos[id]; ok {
-		todo.done = true
+		todo.Done = !todo.Done 
 		s.todos[id] = todo
+        return &todo 
 	}
+    return nil
 }
 
 func (s *service) RemoveTodo(id uint) {
@@ -66,6 +70,13 @@ func (s *service) RemoveTodo(id uint) {
 	delete(s.todos, id)
 }
 
-func (t todo) String() string {
-	return fmt.Sprintf("Todo{note: \"%s\", done: %v}", *t.note, t.done)
+func (s *service) GetTodo(id uint) *Todo{
+	s.mu.Lock()
+	defer s.mu.Unlock()
+    todo := s.todos[id]
+	return &todo 
+}
+
+func (t Todo) String() string {
+	return fmt.Sprintf("Todo{note: \"%s\", done: %v}", *t.Note, t.Done)
 }

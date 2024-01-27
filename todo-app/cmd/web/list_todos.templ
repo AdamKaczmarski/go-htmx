@@ -1,0 +1,53 @@
+package web
+
+import (
+    "todo-app/internal/service"
+    "fmt"
+)
+
+templ ListTodos(todos map[uint]service.Todo) {
+       @Base() {
+           <ul id="list-of-todos" >
+               for id, todo := range todos {
+                   if todo.Done {
+                       @DoneTodo(&id, todo.Note)
+                   } else {
+                       @TodoComponent(&id, todo.Note)
+                   }
+               }
+           </ul>
+        <form method="POST" 
+            hx-post="/todo" 
+            hx-target="#list-of-todos" 
+            hx-swap="afterbegin"
+            hx-on::after-request="this.reset()"
+        >
+			<input id="note" name="note" type="text"/>
+			<button type="submit">Add</button>
+		</form>
+
+       }
+}
+
+templ TodoComponent(id *uint, note *string){
+        <li id={fmt.Sprintf("todo%d",int(*id))}>
+            <p 
+                hx-post={fmt.Sprintf("/todo/%d/toggleDone",*id)}
+                hx-trigger="click"
+                hx-target={fmt.Sprintf("#todo%d",*id)} 
+            >
+                { *note } 
+            </p>
+            <button 
+                hx-target={fmt.Sprintf("#todo%d",*id)} 
+                hx-delete={fmt.Sprintf("/todo/%d",*id)}
+                hx-swap="outerHTML"
+            >
+            X
+            </button>
+        </li>
+}
+
+templ DoneTodo(id *uint, note *string){
+    <s>@TodoComponent(id,note)</s>
+}

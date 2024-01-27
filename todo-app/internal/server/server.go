@@ -6,18 +6,27 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"todo-app/internal/service"
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
 type Server struct {
-	port int
+	port         int
+	todo_service service.Service
 }
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	s := service.NewService()
+	for i := 0; i < 5; i++ {
+		data := fmt.Sprintf("Note %d", i)
+		s.AddTodo(&data)
+	}
+    s.ToggleTodoDone(1)
 	NewServer := &Server{
-		port: port,
+		port:         port,
+		todo_service: s,
 	}
 
 	// Declare Server config
